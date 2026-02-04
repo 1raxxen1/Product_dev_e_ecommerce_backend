@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'apps.orders',
     'apps.cart',
     'apps.accounts',
+    'apps.blogs',
 
     'rest_framework',
     'corsheaders',
