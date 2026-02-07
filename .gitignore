@@ -17,3 +17,6 @@ Thumbs.db
 
 # Node (for later)
 node_modules/
+
+# others
+Backednd.todo
