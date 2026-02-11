@@ -68,6 +68,8 @@ class ProductCategoryListView(generics.ListAPIView):
     serializer_class = ProductCategorySerializer
     queryset = ProductCategory.objects.all()
 
+#Admin Views
+
 class ProductAdminCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAdminUser]
     serializer_class = ProductAdminSerializer
