@@ -52,7 +52,7 @@ class Inventory(models.Model):
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
-    image_url = models.ImageField(_("Image"), upload_to='product_images/', height_field=None, width_field=None, max_length=None)
+    image_url = models.ImageField(("Image"), upload_to='product_images/', height_field=None, width_field=None, max_length=None)
     alt_text = models.CharField(max_length=255, blank=True)
 
     order = models.PositiveIntegerField(default=0)
@@ -76,8 +76,8 @@ class ProductContentBlock(models.Model):
 
     block_type = models.CharField(max_length=20, choices=BLOCK_TYPES)
     content = models.TextField(blank=True, null=True)
-    image = models.ImageField(_("image"), upload_to='product_content_blocks/', height_field=None, width_field=None, max_length=None)
-
+    image = models.ImageField(("image"), upload_to='product_content_blocks/', height_field=None, width_field=None, max_length=None)
+    order = models.PositiveIntegerField(default=0)
     class Meta:
         ordering = ["order"]
 
