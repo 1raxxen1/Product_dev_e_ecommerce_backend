@@ -19,6 +19,7 @@ class ProductCategory(models.Model):
 class Product(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.SET_NULL, null=True, related_name='products')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
