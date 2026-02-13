@@ -4,6 +4,8 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.contrib.postgres.search import SearchQuery , SearchRank
+from django.db.models import F , Count , Min , Max , Avg
 
 from .models import (
     Product,
@@ -39,14 +41,60 @@ class ProductListView(generics.ListAPIView):
             .prefetch_related('images')
             .order_by('-created_at')
         )
-        
-
+        # Search and Filtering
+        search = self.request.query_params.get('search')
         category = self.request.query_params.get('category')
-
+        min_price = self.request.query_params.get('min_price')
+        max_price = self.request.query_params.get('max_price')
         if category:
-                queryset = queryset.filter(category__slug=category)
+            queryset = queryset.filter(category__slug=category)
+        
+        if min_price:
+            queryset = queryset.filter(variants__price__gte=min_price)
+        
+        if max_price:
+            queryset = queryset.filter(variants__price__lte=max_price)
+        
+        if search:
+            query = SearchQuery(search)
+            queryset = (
+                queryset
+                .annotate(rank=SearchRank(F('search_vector'), query))
+                .filter(rank__gte=0.1)
+                .order_by('-rank')
 
+            )
         return queryset
+    def list(self , request , *args , **kwargs):
+        queryset = self.get_queryset()
+
+        category_counts = (
+            queryset
+            .values('category__name', 'category__slug')
+            .annotate(count=Count('id'))
+            .order_by()
+        )
+
+        price_stats = (
+            queryset
+            .aggregate(
+                min_price=Min('variants__price'),
+                max_price=Max('variants__price'),
+                avg_price=Avg('variants__price')
+            )
+        )
+
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page, many=True)
+
+        return Response({
+            "count": queryset.count(),
+            "results": serializer.data,
+            "filters": {
+                "categories": list(category_counts),
+                "price_range": price_stats
+            }
+        })
 
 class ProductDetailView(generics.RetrieveAPIView):
      serializer_class = ProductDetailSerializer
