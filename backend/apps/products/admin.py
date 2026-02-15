@@ -1,6 +1,14 @@
 from django.contrib import admin
-
+from django.db.models import Min
 from .models import Product, ProductCategory, ProductImage, Variant
+
+class VariantInline(admin.TabularInline):
+    model = Variant
+    extra = 1
+
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    extra = 1
 
 # Register your models here.
 @admin.register(ProductCategory)
@@ -13,7 +21,17 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'created_at', 'updated_at', 'is_active')
     list_filter = ('category', 'is_active')
     search_fields = ('name', 'description')
-    
+    prepopulated_fields = {'slug': ('name',)}
+    inlines = [VariantInline, ProductImageInline]
+    exclude = ('search_vector',)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.annotate(min_price=Min('variants__price'))
+
+    def get_min_price(self, obj):
+        return obj.min_price
+    get_min_price.short_description = "Min Price"
 
 @admin.register(ProductImage)
 class ProductImageAdmin(admin.ModelAdmin):
@@ -25,3 +43,5 @@ class ProductImageAdmin(admin.ModelAdmin):
 class VariantAdmin(admin.ModelAdmin):
     list_display = ('product', 'name', 'price', 'is_active')
     list_filter = ('product', 'is_active')
+
+

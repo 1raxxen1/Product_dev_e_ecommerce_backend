@@ -38,8 +38,9 @@ class ProductListView(generics.ListAPIView):
             Product.objects
             .filter(is_active=True)
             .select_related('category') 
-            .prefetch_related('images')
-            .order_by('-created_at')
+            .prefetch_related('images' , 'variants')
+            .annotate(min_price=Min('variants__price'))
+            
         )
         # Search and Filtering
         search = self.request.query_params.get('search')
@@ -64,6 +65,24 @@ class ProductListView(generics.ListAPIView):
                 .order_by('-rank')
 
             )
+
+        ordering = self.request.query_params.get('ordering')
+        if ordering == 'price_asc':
+            queryset = queryset.order_by('min_price')
+
+        elif ordering == 'price_desc':
+            queryset = queryset.order_by('-min_price')
+        
+        elif ordering == 'newest':
+            queryset = queryset.order_by('-created_at')
+
+        elif ordering == 'oldest':
+            queryset = queryset.order_by('created_at')
+        
+        else:
+            queryset = queryset.order_by('-created_at')
+
+
         return queryset
     def list(self , request , *args , **kwargs):
         queryset = self.get_queryset()
@@ -93,7 +112,7 @@ class ProductListView(generics.ListAPIView):
             "filters": {
                 "categories": list(category_counts),
                 "price_range": price_stats
-            }
+            }   
         })
 
 class ProductDetailView(generics.RetrieveAPIView):

@@ -27,9 +27,10 @@ class ProductVariantSerializer(serializers.ModelSerializer):
 class ProductListSerializer(serializers.ModelSerializer):
     category = ProductCategorySerializer(read_only=True)
     images = ProductImageSerializer(many=True, read_only=True)
+    variants = ProductVariantSerializer(many=True, read_only=True)
     class Meta:
         model = Product
-        fields = ['id', 'name', 'description', 'category', 'created_at', 'updated_at', 'is_active' , 'slug' , 'images']
+        fields = ['id', 'name', 'description', 'category', 'created_at', 'updated_at', 'is_active' , 'slug' , 'images' , 'variants']
 
 class ProductSerializer(serializers.ModelSerializer):
     category = ProductCategorySerializer(read_only=True)
