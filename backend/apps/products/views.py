@@ -116,6 +116,7 @@ class ProductListView(generics.ListAPIView):
         })
 
 class ProductDetailView(generics.RetrieveAPIView):
+     queryset = Product.objects.filter(is_active=True).select_related('category').prefetch_related('images', 'content_blocks', 'variants__inventory')
      serializer_class = ProductDetailSerializer
      lookup_field = 'slug'
 

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import (ProductCategory, Product, Variant, Inventory, ProductImage , ProductContentBlock)
+from django.db.models import Min
 
 
 
@@ -20,9 +21,10 @@ class ProductContentBlockSerializer(serializers.ModelSerializer):
 
 class ProductVariantSerializer(serializers.ModelSerializer):
     stock = serializers.IntegerField(source='inventory.stock', read_only=True)
+    in_stock = serializers.BooleanField(source="in_stock", read_only=True)
     class Meta:
         model = Variant
-        fields = ['id', 'name', 'price', 'sku', 'stock']
+        fields = ['id', 'name', 'price', 'sku', 'stock', 'in_stock']
 
 class ProductListSerializer(serializers.ModelSerializer):
     category = ProductCategorySerializer(read_only=True)
@@ -36,6 +38,7 @@ class ProductSerializer(serializers.ModelSerializer):
     category = ProductCategorySerializer(read_only=True)
     images = ProductImageSerializer(many=True, read_only=True)
     content_blocks = ProductContentBlockSerializer(many=True, read_only=True)
+    
     class Meta:
         model = Product
         fields = ['id', 'name', 'description', 'category', 'created_at', 'updated_at', 'is_active']
@@ -46,10 +49,22 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
     content_blocks = ProductContentBlockSerializer(many=True, read_only=True)
     variants = ProductVariantSerializer(many=True, read_only=True)
+    min_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    in_stock = serializers.BooleanField(source="in_stock", read_only=True)
+
+    def get_queryset(self):
+        queryset = (
+            Product.objects
+            .filter(is_active=True)
+            .select_related('category') 
+            .prefetch_related('images' , 'content_blocks', 'variants__inventory')
+            .annotate(min_price=Min('variants__price'))
+        )
+        return queryset
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'description', 'category', 'created_at', 'updated_at', 'is_active', 'images', 'content_blocks', 'variants']
+        fields = ['id', 'name', 'description', 'category', 'created_at', 'updated_at', 'is_active', 'images', 'min_price', 'content_blocks', 'variants', 'in_stock']
 
 class ProductAdminSerializer(serializers.ModelSerializer):
     class Meta:
