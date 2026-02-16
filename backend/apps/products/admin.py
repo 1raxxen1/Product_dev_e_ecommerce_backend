@@ -18,8 +18,16 @@ class ProductCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'created_at', 'updated_at', 'is_active')
-    list_filter = ('category', 'is_active')
+    list_display = ('name', 'category', 'status')
+    fieldsets = (
+        ("Basic Info", {
+            "fields": ("name", "description", "category", "status", "meta_title", "meta_description", "meta_keywords")
+        }),
+        ("SEO Info", {
+            "fields": ("slug",)
+        })
+    )
+    list_filter = ('category', 'status', 'is_active')
     search_fields = ('name', 'description')
     prepopulated_fields = {'slug': ('name',)}
     inlines = [VariantInline, ProductImageInline]
@@ -41,7 +49,7 @@ class ProductImageAdmin(admin.ModelAdmin):
 
 @admin.register(Variant)
 class VariantAdmin(admin.ModelAdmin):
-    list_display = ('product', 'name', 'price', 'is_active')
-    list_filter = ('product', 'is_active')
+    list_display = ('product', 'name', 'price', 'is_active', 'status')
+    list_filter = ('product', 'status', 'is_active')
 
 

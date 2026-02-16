@@ -36,7 +36,7 @@ class ProductListView(generics.ListAPIView):
     def get_queryset(self):
         queryset =(
             Product.objects
-            .filter(is_active=True)
+            .filter(status = Product.Status.PUBLISHED)
             .select_related('category') 
             .prefetch_related('images' , 'variants')
             .annotate(min_price=Min('variants__price'))
@@ -123,7 +123,7 @@ class ProductDetailView(generics.RetrieveAPIView):
      def get_queryset(self):
           return (
                Product.objects
-               .filter(is_active=True)
+               .filter(status=Product.Status.PUBLISHED)
                 .select_related('category')
                 .prefetch_related(
                     'images',

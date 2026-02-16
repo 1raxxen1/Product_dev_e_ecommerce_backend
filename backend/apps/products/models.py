@@ -30,6 +30,43 @@ class Product(models.Model):
     is_active = models.BooleanField(default=True)
     search_vector = SearchVectorField(null=True)
 
+    #SEO
+    meta_title = models.CharField(max_length=255, blank=True)
+    meta_description = models.CharField(max_length=255, blank=True)
+    meta_keywords = models.CharField(max_length=255, blank=True)
+
+    @property
+    def seo_title(self):
+        return self.meta_title if self.meta_title else self.name
+    
+    @property
+    def seo_description(self):
+        return self.meta_description if self.meta_description else self.description[:160]
+
+    def update_search_vector(self):
+        Product.objects.filter(pk=self.pk).update(
+            search_vector=(
+            SearchVector('name', weight='A') +
+            SearchVector('description', weight='B') 
+            )
+        )
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.update_search_vector()
+
+    class Status(models.TextChoices):
+        DRAFT = 'draft', 'Draft'
+        PUBLISHED = 'published', 'Published'
+        ARCHIVED = 'archived', 'Archived'
+
+    status = models.CharField(
+            max_length=20,
+            choices=Status.choices,
+            default=Status.DRAFT,
+            db_index=True
+        )
+
     class Meta: indexes = [ 
         GinIndex(fields=['search_vector']),
         models.Index(fields=['slug']),
@@ -66,6 +103,11 @@ class Variant(models.Model):
             models.Index(fields=['product']),
             models.Index(fields=['is_active']),
         ]
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.product:
+            self.product.update_search_vector()
 
     @property
     def in_stock(self):
