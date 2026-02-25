@@ -52,6 +52,10 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     min_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     in_stock = serializers.BooleanField(source="in_stock", read_only=True)
 
+    seo_title = serializers.CharField(source='name', read_only=True)
+    seo_description = serializers.CharField(source='description', read_only=True)
+
+
     def get_queryset(self):
         queryset = (
             Product.objects
@@ -64,7 +68,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'description', 'category', 'created_at', 'updated_at', 'is_active', 'images', 'min_price', 'content_blocks', 'variants', 'in_stock']
+        fields = ['id', 'name', 'description', 'category', 'created_at', 'updated_at', 'is_active', 'images', 'min_price', 'content_blocks', 'variants', 'in_stock', 'seo_title', 'seo_description']
 
 class ProductAdminSerializer(serializers.ModelSerializer):
     class Meta:
