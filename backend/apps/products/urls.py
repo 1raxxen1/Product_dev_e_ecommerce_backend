@@ -41,6 +41,3 @@ urlpatterns = [
     path("admin/inventory/<int:pk>/update/", views.AdminInventoryUpdateView.as_view()),
 ]
 
-from django.urls import path
-
-urlpatterns = []

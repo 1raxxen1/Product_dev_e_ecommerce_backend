@@ -49,7 +49,7 @@ class ProductImageAdmin(admin.ModelAdmin):
 
 @admin.register(Variant)
 class VariantAdmin(admin.ModelAdmin):
-    list_display = ('product', 'name', 'price', 'is_active', 'status')
-    list_filter = ('product', 'status', 'is_active')
+    list_display = ('product', 'name', 'price', 'is_active')
+    list_filter = ('product', 'is_active')
 
 
