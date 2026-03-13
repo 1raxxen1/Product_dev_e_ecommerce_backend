@@ -21,7 +21,9 @@ services:
     build: ./backend
     container_name: friedcarborator_backend
     command: >
-      gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 4 DJANGO_SETTINGS_MODULE=core.settings.prod
+      gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 4
+    environment:
+      - DJANGO_SETTINGS_MODULE=core.settings.prod
     restart: always
     volumes:
       - ./backend:/app
@@ -30,11 +32,11 @@ services:
     depends_on:
       - db
     env_file:
-      - ./backend/.env
+      - .env
     networks:
       - app-network
 
-nginx:
+  nginx:
     image: nginx:alpine
     container_name: friedcarborator_nginx
     restart: always
@@ -52,7 +54,7 @@ volumes:
   postgres_data:
     
 networks:
-  - app-network
+  app-network:
 
 
   
